@@ -81,7 +81,9 @@ $ rna build -o s3 # saves s3 based on config/s3.yml settings
 
 The config/s3.yml should look like this:
 
+```yaml
 access_key_id: hocuspocus
 secret_access_key: opensesame
 bucket: my-bucket
 folder: chef/nodejson
+```
