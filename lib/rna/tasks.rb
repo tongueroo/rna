@@ -9,7 +9,7 @@ module Rna
         if File.exist?(dest)
           puts "already exists: #{dest}" unless options[:quiet]
         else
-          puts "creating: #{dest} from #{source}" unless options[:quiet]
+          puts "creating: #{dest}" unless options[:quiet]
           FileUtils.cp(source, dest)
         end
       end
@@ -20,7 +20,7 @@ module Rna
 
     def initialize(options={})
       @options = options
-      @dsl = DSL.new(@options[:config_path])
+      @dsl = DSL.new
     end
     def build
       @dsl.evaluate

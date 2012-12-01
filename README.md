@@ -62,27 +62,26 @@ end
 ```
 
 <pre>
-$ rna generate
+$ rna build
 </pre>
 
-If you're using the starter config/rna.rb, this should output:
+If you're using the starter config/rna.rb, this should build:
 
-* output/base.json
-* output/prod-api-redis.json
-* output/stag-api-redis.json
-* output/prod-api-resque.json
+* nodejson/base.json
+* nodejson/prod-api-app.json
+* nodejson/prod-api-redis.json
+* nodejson/prod-api-resque.json
+* nodejson/stag-api-app.json
+* nodejson/stag-api-redis.json
+* nodejson/stag-api-resque.json
 
 <pre>
-$ rna --output s3 config/rna.rb # will save to s3 based on s3 settings
+$ rna build -o s3 # saves s3 based on config/s3.yml settings
 </pre>
-
-# Settings
-s3_credentials 'config/s3.yml'
-s3_bucket 'br-ops'
-s3_output_path 'chef/nodejson'
 
 The config/s3.yml should look like this:
 
-credentials:
-  access_key_id: abc
-  secret_access_key: abc
+access_key_id: hocuspocus
+secret_access_key: opensesame
+bucket: my-bucket
+folder: chef/nodejson

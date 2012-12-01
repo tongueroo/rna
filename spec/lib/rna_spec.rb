@@ -11,7 +11,7 @@ describe Rna do
   end
 
   after(:each) do
-    FileUtils.rm_rf("#{@project_root}/output")
+    FileUtils.rm_rf("#{@project_root}/nodejson")
   end
 
   it "evaluate global attributes data to be used later to merge the nodejson structures together" do
@@ -93,31 +93,31 @@ describe Rna do
 
   it "should write json files to outputs folder" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    Dir.glob("#{@project_root}/output/*").size.should > 0
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    Dir.glob("#{@project_root}/nodejson/*").size.should > 0
   end
 
   # complete end to end tests
   it "base.json should contain correct attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    base = JSON.load(IO.read("#{@project_root}/output/base.json"))
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    base = JSON.load(IO.read("#{@project_root}/nodejson/base.json"))
     base['role'].should == 'base'
     base['run_list'].should == ["role[base]"]
   end
 
   it "base.json should not contain global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    base = JSON.load(IO.read("#{@project_root}/output/base.json"))
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    base = JSON.load(IO.read("#{@project_root}/nodejson/base.json"))
     base['framework_env'].should be_nil
     base['deploy_code'].should be_nil
   end
 
   it "prod-api-redis.json should contain base and global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-redis.json"))
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    json = JSON.load(IO.read("#{@project_root}/nodejson/prod-api-redis.json"))
     json['role'].should == 'prod-api-redis'
     json['run_list'].should == ["role[base]"]
     json['framework_env'].should == 'production'
@@ -126,8 +126,8 @@ describe Rna do
 
   it "stag-api-redis.json should contain base and global attributes and apply rules" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    json = JSON.load(IO.read("#{@project_root}/output/stag-api-redis.json"))
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    json = JSON.load(IO.read("#{@project_root}/nodejson/stag-api-redis.json"))
     json['role'].should == 'stag-api-redis'
     json['run_list'].should == ["role[base]"]
     json['deploy_code'].should == false
@@ -136,8 +136,8 @@ describe Rna do
 
   it "prod-api-app.json should contain base and global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    json = JSON.load(IO.read("#{@project_root}/nodejson/prod-api-app.json"))
     json['role'].should == 'prod-api-app'
     json['run_list'].should == ["role[base]","role[api_app]"]
     json['deploy_code'].should == true
@@ -148,7 +148,7 @@ describe Rna do
   # only run when S3=1, will need to setup spec/project/config/s3.yml
   it "should upload to s3" do
     @dsl.build
-    outputer = @dsl.output(:output => 's3', :config_path => "#{@project_root}/config/s3.yml")
+    outputer = @dsl.output(:output => 's3', :s3_config_path => "#{@project_root}/config/s3.yml")
 
     config = outputer.config
     s3 = outputer.s3
@@ -180,9 +180,9 @@ describe Rna do
   it "task build should generate node.json files" do
     Rna::Tasks.build(
       :config_path => "#{@project_root}/config/rna.rb", 
-      :output_path => "#{@project_root}/output"
+      :output_path => "#{@project_root}/nodejson"
     )
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
+    json = JSON.load(IO.read("#{@project_root}/nodejson/prod-api-app.json"))
     json['role'].should == 'prod-api-app'
     json['run_list'].should == ["role[base]","role[api_app]"]
     json['deploy_code'].should == true
