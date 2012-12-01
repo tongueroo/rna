@@ -4,8 +4,10 @@ require File.expand_path('../lib/rna/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Tung Nguyen"]
   gem.email         = ["tongueroo@gmail.com"]
-  gem.description   = %q{Rna DSL generates chef solo node.json files.}
-  gem.summary       = %q{Rna DSL generates chef solo node.json files.}
+  gem.description   = %q{Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
+.}
+  gem.summary       = %q{Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
+.}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
