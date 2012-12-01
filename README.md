@@ -24,7 +24,7 @@ This will sets starter config/rna.rb and config/s3.yml files.
 Example rna.rb file
 ------------
 
-<pre>
+```ruby
 # This is starter example rna template.
 # This is meant be be modified to your needs.
 ###################################
@@ -59,7 +59,7 @@ role 'prod-api-resque', 'stag-api-resque' do
   inherits 'prod-api-app'
   set 'workers', 8
 end
-</pre>
+```
 
 <pre>
 $ rna build
