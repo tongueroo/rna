@@ -30,7 +30,7 @@ module Rna
       bucket = @s3.buckets[@config['bucket']]
       jsons.each do |role,json|
         puts "  #{role}.json" if options[:verbose]
-        bucket.objects.create("#{@config['folder']}/#{role}.json", json, s3_options)
+        bucket.objects.create("#{@config['folder']}/#{role}.json", json)
       end
       self # return outputer object for specs
     end
