@@ -1,0 +1,10 @@
+{
+  "application": null,
+  "deploy_code": false,
+  "framework_env": "production",
+  "repository": null,
+  "role": "prod-api-redis",
+  "run_list": [
+    "role[base]"
+  ]
+}

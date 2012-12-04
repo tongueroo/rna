@@ -11,7 +11,7 @@ describe Rna do
   end
 
   after(:each) do
-    FileUtils.rm_rf("#{@project_root}/nodejson")
+    FileUtils.rm_rf("#{@project_root}/output")
   end
 
   it "evaluate global attributes data to be used later to merge the nodejson structures together" do
@@ -93,14 +93,14 @@ describe Rna do
 
   it "should write json files to outputs folder" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     Dir.glob("#{@project_root}/output/*").size.should > 0
   end
 
   # complete end to end tests
   it "base.json should contain correct attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     base = JSON.load(IO.read("#{@project_root}/output/base.json"))
     base['role'].should == 'base'
     base['run_list'].should == ["role[base]"]
@@ -108,7 +108,7 @@ describe Rna do
 
   it "base.json should not contain global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     base = JSON.load(IO.read("#{@project_root}/output/base.json"))
     base['framework_env'].should be_nil
     base['deploy_code'].should be_nil
@@ -116,7 +116,7 @@ describe Rna do
 
   it "prod-api-redis.json should contain base and global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-redis.json"))
     json['role'].should == 'prod-api-redis'
     json['run_list'].should == ["role[base]"]
@@ -126,7 +126,7 @@ describe Rna do
 
   it "stag-api-redis.json should contain base and global attributes and apply rules" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     json = JSON.load(IO.read("#{@project_root}/output/stag-api-redis.json"))
     json['role'].should == 'stag-api-redis'
     json['run_list'].should == ["role[base]"]
@@ -136,7 +136,7 @@ describe Rna do
 
   it "prod-api-app.json should contain base and global attributes" do
     @dsl.build
-    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/nodejson")
+    @dsl.output(:output => 'filesystem', :output_path => "#{@project_root}/output")
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
     json['role'].should == 'prod-api-app'
     json['run_list'].should == ["role[base]","role[api_app]"]
@@ -180,7 +180,7 @@ describe Rna do
   it "task build should generate node.json files" do
     Rna::Tasks.build(
       :config_path => "#{@project_root}/config/rna.rb", 
-      :output_path => "#{@project_root}/nodejson"
+      :output_path => "#{@project_root}/output"
     )
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
     json['role'].should == 'prod-api-app'

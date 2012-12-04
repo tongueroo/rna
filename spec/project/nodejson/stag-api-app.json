@@ -1,0 +1,17 @@
+{
+  "application": "api",
+  "deploy_code": true,
+  "framework_env": "staging",
+  "repository": "git@github.com:br/api.git",
+  "role": "stag-api-app",
+  "run_list": [
+    "role[base]",
+    "role[api_app]"
+  ],
+  "scout": {
+    "key": "abc",
+    "gems": {
+      "redis": null
+    }
+  }
+}

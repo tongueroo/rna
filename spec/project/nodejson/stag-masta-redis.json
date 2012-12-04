@@ -1,0 +1,10 @@
+{
+  "application": null,
+  "deploy_code": false,
+  "framework_env": "staging",
+  "repository": null,
+  "role": "stag-masta-redis",
+  "run_list": [
+    "role[base]"
+  ]
+}

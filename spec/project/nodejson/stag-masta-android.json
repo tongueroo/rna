@@ -1,0 +1,10 @@
+{
+  "application": "masta",
+  "deploy_code": true,
+  "framework_env": "staging",
+  "repository": "git@github.com:arockwell/masta_blasta.git",
+  "role": "stag-masta-android",
+  "run_list": [
+    "role[base]"
+  ]
+}
