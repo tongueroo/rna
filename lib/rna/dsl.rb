@@ -65,6 +65,7 @@ module Rna
 
       outputer = options[:output] || 'filesystem'
       outputer_class = Rna.const_get(outputer.capitalize)
+      puts "Building node.json files"
       outputer_class.new(options).run(jsons)
     end
 
