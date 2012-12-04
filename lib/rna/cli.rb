@@ -22,7 +22,7 @@ EOL
     method_option :output, :aliases => '-o', :desc => "specify where to output the generated files to", :default => 'filesystem'
     method_option :public_read, :aliases => '-p', :desc => "make s3 files readable by public, default private", :default => false, :type => :boolean
     def build
-      Rna::Tasks.build(options.dup)
+      Rna::Tasks.build(options.dup.merge(:verbose => true))
     end
   end
   

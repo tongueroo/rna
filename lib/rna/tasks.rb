@@ -20,7 +20,11 @@ module Rna
 
     def initialize(options={})
       @options = options
-      @dsl = DSL.new
+      if options[:config_path]
+        @dsl = DSL.new(options[:config_path])
+      else
+        @dsl = DSL.new
+      end
     end
     def build
       @dsl.evaluate
