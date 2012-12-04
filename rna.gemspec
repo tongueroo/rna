@@ -17,6 +17,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Rna::VERSION
 
+  gem.add_dependency "rake"
   gem.add_dependency "json"
   gem.add_dependency "thor"
   gem.add_dependency "aws-sdk"
