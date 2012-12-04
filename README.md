@@ -1,6 +1,11 @@
 Rna gem
 ===========
 
+[![Build History][2]][1]
+
+[1]: http://travis-ci.org/tongueroo/rna
+[2]: https://secure.travis-ci.org/tongueroo/rna.png?branch=master
+
 Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
 
 Requirements
