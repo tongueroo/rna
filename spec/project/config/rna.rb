@@ -25,6 +25,7 @@ end
 role 'prod-api-redis', 'stag-api-redis'
 role 'prod-api-resque', 'stag-api-resque' do
   inherits 'prod-api-app'
+  set 'workers', 8
 end
 role 'prod-api-app', 'stag-api-app' do
   run_list ['base','api_app']

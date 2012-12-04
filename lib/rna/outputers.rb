@@ -9,10 +9,10 @@ module Rna
   class Filesystem < Outputer
     def run(jsons)
       # options[:output_path] only used for specs
-      output_path = options[:output_path] || "nodejson"
+      output_path = options[:output_path] || "output"
       FileUtils.mkdir(output_path) unless File.exist?(output_path)
       jsons.each do |role,json|
-        puts "#{role}.json" if options[:verbose]
+        puts "  #{role}.json" if options[:verbose]
         File.open("#{output_path}/#{role}.json", 'w') {|f| f.write(json) }
       end
     end
@@ -29,7 +29,7 @@ module Rna
       @s3 = AWS::S3.new
       bucket = @s3.buckets[@config['bucket']]
       jsons.each do |role,json|
-        puts "#{role}.json" if options[:verbose]
+        puts "  #{role}.json" if options[:verbose]
         bucket.objects.create("#{@config['folder']}/#{role}.json", json, s3_options)
       end
       self # return outputer object for specs

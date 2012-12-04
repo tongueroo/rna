@@ -3,9 +3,10 @@ module Rna
     def self.init(project_root=".",options={})
       puts "Settin up rna project" unless options[:quiet]
       FileUtils.mkdir("#{project_root}/config") unless File.exist?("#{project_root}/config")
-      %w/rna.rb s3.yml/.each do |name|
+      %w/rna.rb s3.yml Guardfile/.each do |name|
         source = File.expand_path("../../files/#{name}", __FILE__)
         dest = "#{project_root}/config/#{File.basename(source)}"
+        dest = "#{project_root}/#{File.basename(source)}" if name == 'Guardfile'
         if File.exist?(dest)
           puts "already exists: #{dest}" unless options[:quiet]
         else
