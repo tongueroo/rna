@@ -7,6 +7,6 @@ require 'pp'
 $:.unshift File.dirname(__FILE__)
 require 'rna/version'
 require 'rna/cli'
-require 'rna/tasks'
+require 'rna/task'
 require 'rna/dsl'
 require 'rna/outputers'

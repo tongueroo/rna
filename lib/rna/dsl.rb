@@ -1,66 +1,116 @@
 module Rna
   class DSL
-    @@default_inherits = nil
-    attr_reader :attributes, :rules, :nodejsons
-    def initialize(config_path='config/rna.rb')
-      @path = config_path
-      @scope = nil
-      @rules = []
+    attr_reader :data, :jsons
+    def initialize(options={})
+      @options = options
+
+      @path = options[:config_path] || 'config/rna.rb'
+      @global_attributes = nil
+      @pre_rule = nil
+      @post_rule = nil
       @roles = []
-      @attributes = {}
-      @nodejsons = {}
     end
 
     def evaluate
       instance_eval(File.read(@path), @path)
     end
 
-    def build
-      # process roles
-      @roles.each do |role|
-        @nodejsons[role] = process_role(role)
-      end
-      @nodejsons
+    def global(options={},&block)
+      @global = {:options => options, :block => block}
     end
-          
-    # builds node.json
-    # 1. global attributes
-    # 2. parent inherited attributes all the way up the inheritance chain
-    #    each descendent role overrides it's parent role
-    # 3. final attributes from the desired role is built last
-    def process_role(role, exclude_global=nil)
-      # only compute exclude_global on on top level call and continue passing down recursive stack call
-      if exclude_global.nil?
-        exclude_global = @attributes['global']['except'].include?(role)
+
+    def default_inherits(role)
+      Role.default_inherits = role
+    end
+
+    def pre_rule(&block)
+      @pre_rule = {:block => block}
+    end
+
+    def post_rule(&block)
+      @post_rule = {:block => block}
+    end
+
+    def role(*names, &block)
+      names.each {|name| each_role(name, &block) }
+    end
+
+    def each_role(name, &block)
+      @roles << {:name => name, :block => block}
+    end
+
+    def run
+      evaluate
+      build
+      process
+      @options.empty? ? output : output(@options)
+    end
+
+    def build
+      @data = {
+        'global' => nil,
+        'roles' => []
+      }
+      # build global attributes
+      @data['global'] = Global.new(@global[:options], @global[:block]).build
+
+      # build roles
+      @roles.each do |r|
+        @data['roles'] << Role.new(r[:name], r[:block], @options).build
       end
 
-      inherits = @attributes[role]['inherits']
+      @data
+    end
+
+    def process
+      @jsons = {}
+      roles = @data['roles'].collect{|h| h['name']}
+      roles.each do |role|
+        @jsons[role] = process_role(role)
+      end
+      @jsons
+    end
+
+    # builds node.json hash
+    # 1. global attributes
+    # 2. pre rule
+    # 3. role, going up the inherits chain
+    # 4. post rule
+    def process_role(role, exclude_global=nil, depth=1)
+      # only compute exclude_global on on top level call and continue passing down recursive stack call
+      if exclude_global.nil?
+        exclude_global = @data['global']['except'].include?(role)
+      end
+
+      role_data = @data['roles'].find {|h| h['name'] == role}
+      inherits = role_data['inherits']
       if inherits
-        nodejson = process_role(inherits, exclude_global)
+        json = process_role(inherits, exclude_global, depth+1)
       else
-        if exclude_global
-          nodejson = {}
-        else
-          attributes = @attributes['global']['attributes'] || {}
-          nodejson = attributes.clone
+        json = exclude_global ? {} : @data['global']['attributes'].clone
+        if @pre_rule
+          pre_data = Rule.new(role, @pre_rule[:block]).build
+          json.merge!(pre_data['attributes'])
         end
       end
 
-      # apply each rule to each role's attributes before we do the merge
-      @rules.each do |block|
-        set_scope(role)
-        self.instance_eval(&block)
+      attributes = role_data['attributes'] || {}
+      json.merge!(attributes)
+      # only process post rule at the very last step
+      if @post_rule and depth == 1
+        post_data = Rule.new(role, @post_rule[:block]).build
+        json.merge!(post_data['attributes'])
       end
-
-      attributes = @attributes[role]['attributes'] || {}
-      nodejson.merge!(attributes)
-      nodejson
+      json
     end
 
     def output(options={})
       jsons = {}
-      nodejsons.each do |role,data|
-        jsons[role] = JSON.pretty_generate(data)
+      @jsons.each do |role,data|
+        role_data = @data['roles'].find {|h| h['name'] == role}
+        if role_data['output']
+          jsons[role] = JSON.pretty_generate(data)
+        end
       end
 
       outputer = options[:output] || 'filesystem'
@@ -69,62 +119,87 @@ module Rna
       outputer_class.new(options).run(jsons)
     end
 
-    # must be called before every instance_eval of the dsl to set the @scope
-    def set_scope(scope,type=Hash)
-      @scope = scope
-      @attributes[@scope] ||= type.new
-    end
-
-    def global_attributes(options={},&block)
-      set_scope('global')
-      @attributes['global']['except'] = [options[:except]].flatten
-      self.instance_eval(&block)
-    end
-    def default_inherits(role)
-      @@default_inherits = role
-    end
-    # rules are stored in a different place than attributes
-    def rule(name=nil,&block)
-      @rules << block
-    end
-    def role(*names,&block)
-      names.each do |name|
-        evaluate_role(name,&block)
+    class Builder
+      def build
+        instance_eval(&@block) if @block
+        @data
       end
-    end
-    def evaluate_role(name,&block)
-      @roles << name
-      set_scope(name)
-      instance_eval(&default_block)
-      instance_eval(&block) if block_given?
-    end
 
-    def default_block
-      Proc.new do
-        @attributes[@scope]['name'] = @scope
-        set 'role', name
-        inherits @@default_inherits
+      def set(key, value)
+        @data['attributes'][key] = value
       end
     end
 
-    # methods in blocks, right now I'm mixing all the methods from role, rule, global_attributes together, because there's not a lot and its simple this way
-    # methods rely on @scope being already via set_scope method
-    def name
-      @attributes[@scope]['name']
+    # rules get processed scoed to a specific role
+    class Rule < Builder
+      attr_reader :role
+      def initialize(role, block)
+        @role = role
+        @block = block
+        @data = {
+          'attributes' => {}
+        }
+      end
+
+      def name
+        @role
+      end
     end
-    def set(key, value)
-      # puts "%%% @scope #{@scope.inspect}"
-      # pp @attributes
-      @attributes[@scope]['attributes'] ||= {}
-      @attributes[@scope]['attributes'][key] = value
+
+    class Global < Builder
+      def initialize(options, block)
+        @options = options
+        @block = block
+        @data = {
+          'except' => [options[:except]].compact,
+          'attributes' => {}
+        }
+      end
     end
-    def inherits(role)
-      role = nil if role == @scope # can't inherit itself
-      @attributes[@scope]['inherits'] = role
+
+    class Role < Builder
+      attr_reader :name
+      def initialize(name, block, options)
+        @name = name
+        @block = block
+        @options = options
+
+        @data = {
+          'name' => name,
+          'attributes' => {
+            'role' => name
+          },
+          'inherits' => @@default_inherits != name ? @@default_inherits : nil,
+          'output' => true
+        }
+      end
+
+      def self.default_inherits=(inherits)
+        @@default_inherits = inherits
+      end
+        
+      def role
+        @name
+      end
+
+      def output(val)
+        @data['output'] = val
+      end
+
+      def inherits(role)
+        role = nil if role == @name # can't inherit itself
+        @data['inherits'] = role
+      end
+
+      def role_list(list)
+        list = list.collect {|i| "role[#{i}]"}
+        set('run_list', list)
+      end
+
+      def run_list(list)
+        set('run_list', list)
+      end
     end
-    def run_list(list)
-      list = list.collect {|i| "role[#{i}]"}
-      set('run_list', list)
-    end
+
   end
 end
