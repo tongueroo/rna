@@ -128,6 +128,15 @@ module Rna
       def set(key, value)
         @data['attributes'][key] = value
       end
+
+      def role_list(list)
+        list = list.collect {|i| "role[#{i}]"}
+        set('run_list', list)
+      end
+
+      def run_list(list)
+        set('run_list', list)
+      end
     end
 
     # rules get processed scoed to a specific role
@@ -143,15 +152,6 @@ module Rna
 
       def name
         @role
-      end
-
-      def role_list(list)
-        list = list.collect {|i| "role[#{i}]"}
-        set('run_list', list)
-      end
-
-      def run_list(list)
-        set('run_list', list)
       end
     end
 
@@ -198,15 +198,6 @@ module Rna
       def inherits(role)
         role = nil if role == @name # can't inherit itself
         @data['inherits'] = role
-      end
-
-      def role_list(list)
-        list = list.collect {|i| "role[#{i}]"}
-        set('run_list', list)
-      end
-
-      def run_list(list)
-        set('run_list', list)
       end
     end
 
