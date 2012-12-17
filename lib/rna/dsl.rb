@@ -144,6 +144,15 @@ module Rna
       def name
         @role
       end
+
+      def role_list(list)
+        list = list.collect {|i| "role[#{i}]"}
+        set('run_list', list)
+      end
+
+      def run_list(list)
+        set('run_list', list)
+      end
     end
 
     class Global < Builder

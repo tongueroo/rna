@@ -58,4 +58,11 @@ post_rule do
   set 'post_rule', 2
   set 'framework_env', 'production' if role =~ /^prod/
   set 'framework_env', 'staging' if role =~ /^stag/
+
+  list = role.split('-')
+  if list.size == 3
+    env, repo, role = list
+    role_list ['base', "#{repo}_#{role}"]
+    set 'application', repo
+  end
 end

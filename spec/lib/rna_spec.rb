@@ -48,7 +48,7 @@ describe Rna do
     @dsl.run
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-redis.json"))
     json['role'].should == 'prod-api-redis'
-    json['run_list'].should == ["role[base]"]
+    json['run_list'].should == ["role[base]", "role[api_redis]"]
     json['framework_env'].should == 'production'
     json['deploy_code'].should == false
   end
@@ -57,7 +57,7 @@ describe Rna do
     @dsl.run
     json = JSON.load(IO.read("#{@project_root}/output/stag-api-redis.json"))
     json['role'].should == 'stag-api-redis'
-    json['run_list'].should == ["role[base]"]
+    json['run_list'].should == ["role[base]", "role[api_redis]"]
     json['deploy_code'].should == false
     json['framework_env'].should == 'staging' # this is tests the rule
   end
