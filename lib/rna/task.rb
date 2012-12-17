@@ -1,5 +1,5 @@
 module Rna
-  class Tasks
+  class Task
     def self.init(project_root=".",options={})
       puts "Settin up rna project" unless options[:quiet]
       FileUtils.mkdir("#{project_root}/config") unless File.exist?("#{project_root}/config")
@@ -15,22 +15,16 @@ module Rna
         end
       end
     end
-    def self.build(options)
-      new(options).build
+    def self.generate(options)
+      new(options).generate
     end
 
     def initialize(options={})
       @options = options
-      if options[:config_path]
-        @dsl = DSL.new(options[:config_path])
-      else
-        @dsl = DSL.new
-      end
+      @dsl = options[:config_path] ? DSL.new(options) : DSL.new
     end
-    def build
-      @dsl.evaluate
-      @dsl.build
-      @dsl.output(@options)
+    def generate
+      @dsl.run
     end
   end
 end
