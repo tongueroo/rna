@@ -21,7 +21,6 @@ module Rna
   class S3 < Outputer
     attr_reader :config, :s3
     def run(jsons)
-      acl_options = @options[:public_read] ? {:acl => :public_read} : {}
       # options[:config] only used for specs
       s3_config_path = options[:s3_config_path] || 'config/s3.yml'
       @config ||= YAML.load(File.read(s3_config_path))

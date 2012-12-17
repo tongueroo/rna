@@ -21,7 +21,7 @@ module Rna
 
     def initialize(options={})
       @options = options
-      @dsl = options[:config_path] ? DSL.new(options) : DSL.new
+      @dsl = options.empty? ? DSL.new : DSL.new(options)
     end
     def generate
       @dsl.run
