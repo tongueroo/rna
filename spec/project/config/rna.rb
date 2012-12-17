@@ -1,7 +1,7 @@
 ###################################
 # Settings
 default_inherits 'base'
-global_attributes(:except => 'base') do
+global(:except => 'base') do
   set 'application', nil
   set 'deploy_code', false
   set 'framework_env', 'production'
@@ -9,17 +9,17 @@ global_attributes(:except => 'base') do
 end
 
 ###################################
-# Post processing rules that run at the end
-rule do
-  set 'framework_env', 'production' if name =~ /^prod/
-  set 'framework_env', 'staging' if name =~ /^stag/
+pre_rule do
+  set 'pre_rule', 1
+  set 'chef_branch', 'prod' if role =~ /^prod/
+  set 'chef_branch', 'master' if role =~ /^stag/
 end
 
 ###################################
 # Roles
 # base
 role 'base' do
-  run_list ['base']
+  role_list ['base']
 end
 # api
 role 'prod-api-redis', 'stag-api-redis'
@@ -28,7 +28,7 @@ role 'prod-api-resque', 'stag-api-resque' do
   set 'workers', 8
 end
 role 'prod-api-app', 'stag-api-app' do
-  run_list ['base','api_app']
+  role_list ['base','api_app']
   set 'application', 'api'
   set 'deploy_code', true
   set 'repository', 'git@github.com:br/api.git'
@@ -40,9 +40,22 @@ role 'prod-api-app', 'stag-api-app' do
       }
 end
 # masta
+role 'masta-app' do
+  output false
+  set 'masta_app', 123
+end
 role 'prod-masta-redis', 'stag-masta-redis'
 role 'prod-masta-android', 'stag-masta-android' do
+  inherits 'masta-app'
   set 'application', 'masta'
   set 'deploy_code', true
   set 'repository', 'git@github.com:arockwell/masta_blasta.git'
+end
+
+###################################
+# Post processing rules that run at the end
+post_rule do
+  set 'post_rule', 2
+  set 'framework_env', 'production' if role =~ /^prod/
+  set 'framework_env', 'staging' if role =~ /^stag/
 end

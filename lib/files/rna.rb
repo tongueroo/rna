@@ -3,15 +3,14 @@
 ###################################
 # Settings
 default_inherits 'base'
-global_attributes(:except => ['base']) do
+global(:except => 'base') do
   set 'framework_env', 'production'
 end
 
 ###################################
-# Post processing rules that run at the end
-rule do
-  set 'framework_env', 'production' if name =~ /^prod/
-  set 'framework_env', 'staging' if name =~ /^stag/
+pre_rule do
+  set 'chef_branch', 'prod' if role =~ /^prod/
+  set 'chef_branch', 'master' if role =~ /^stag/
 end
 
 ###################################
@@ -34,4 +33,11 @@ role 'prod-api-resque', 'stag-api-resque' do
   inherits 'prod-api-app'
   run_list ['base','api_resque']
   set 'workers', 8
+end
+
+###################################
+# Post processing rules that run at the end
+post_rule do
+  set 'framework_env', 'production' if role =~ /^prod/
+  set 'framework_env', 'staging' if role =~ /^stag/
 end

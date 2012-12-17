@@ -35,15 +35,14 @@ Example rna.rb file
 ###################################
 # Settings
 default_inherits 'base'
-global_attributes(:except => ['base']) do
+global(:except => 'base') do
   set 'framework_env', 'production'
 end
 
 ###################################
-# Post processing rules that run at the end
-rule do
-  set 'framework_env', 'production' if name =~ /^prod/
-  set 'framework_env', 'staging' if name =~ /^stag/
+pre_rule do
+  set 'chef_branch', 'prod' if role =~ /^prod/
+  set 'chef_branch', 'master' if role =~ /^stag/
 end
 
 ###################################
@@ -67,21 +66,123 @@ role 'prod-api-resque', 'stag-api-resque' do
   run_list ['base','api_resque']
   set 'workers', 8
 end
+
+###################################
+# Post processing rules that run at the end
+post_rule do
+  set 'framework_env', 'production' if role =~ /^prod/
+  set 'framework_env', 'staging' if role =~ /^stag/
+end
 ```
 
 <pre>
-$ rna build
+$ rna generate
 </pre>
 
-If you're using the starter config/rna.rb, this should build:
+Here's the example of the output looks like:
 
-* nodejson/base.json
-* nodejson/prod-api-app.json
-* nodejson/prod-api-redis.json
-* nodejson/prod-api-resque.json
-* nodejson/stag-api-app.json
-* nodejson/stag-api-redis.json
-* nodejson/stag-api-resque.json
+output/base.json:
+
+```json
+{
+  "role": "base",
+  "run_list": [
+    "base"
+  ]
+}
+```
+
+output/prod-api-app.json:
+
+```json
+{
+  "framework_env": "production",
+  "role": "prod-api-app",
+  "run_list": [
+    "base",
+    "api_app"
+  ],
+  "application": "api",
+  "deploy_code": true,
+  "repository": "git@github.com:br/api.git"
+}
+```
+
+output/prod-api-redis.json:
+
+```json
+{
+  "framework_env": "production",
+  "role": "prod-api-redis",
+  "run_list": [
+    "base",
+    "api_redis"
+  ]
+}
+```
+
+output/prod-api-resque.json:
+
+```json
+{
+  "framework_env": "production",
+  "role": "prod-api-resque",
+  "run_list": [
+    "base",
+    "api_resque"
+  ],
+  "application": "api",
+  "deploy_code": true,
+  "repository": "git@github.com:br/api.git",
+  "workers": 8
+}
+```
+
+output/stag-api-app.json:
+
+```json
+{
+  "framework_env": "staging",
+  "role": "stag-api-app",
+  "run_list": [
+    "base",
+    "api_app"
+  ],
+  "application": "api",
+  "deploy_code": true,
+  "repository": "git@github.com:br/api.git"
+}
+```
+
+output/stag-api-redis.json:
+
+```json
+{
+  "framework_env": "staging",
+  "role": "stag-api-redis",
+  "run_list": [
+    "base",
+    "api_redis"
+  ]
+}
+```
+
+output/stag-api-resque.json:
+
+```json
+{
+  "framework_env": "staging",
+  "role": "stag-api-resque",
+  "run_list": [
+    "base",
+    "api_resque"
+  ],
+  "application": "api",
+  "deploy_code": true,
+  "repository": "git@github.com:br/api.git",
+  "workers": 8
+}
+```
 
 <pre>
 $ rna build -o s3 # saves s3 based on config/s3.yml settings
@@ -93,5 +194,5 @@ The config/s3.yml should look like this:
 access_key_id: hocuspocus
 secret_access_key: opensesame
 bucket: my-bucket
-folder: chef/nodejson
+folder: chef/rna
 ```

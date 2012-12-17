@@ -1,4 +1,4 @@
 access_key_id: hocuspocus
 secret_access_key: opensesame
 bucket: my-bucket
-folder: chef/nodejson
+folder: chef/rna
