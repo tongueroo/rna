@@ -13,6 +13,14 @@ module Rna
 
     def evaluate
       instance_eval(File.read(@path), @path)
+      load_roles
+    end
+
+    # load any roles defined in project/config/rna/*
+    def load_roles
+      Dir.glob("#{File.dirname(@path)}/rna/*").each do |path|
+        instance_eval(File.read(path), path)
+      end
     end
 
     def global(options={},&block)
