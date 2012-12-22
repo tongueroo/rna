@@ -1,5 +1,4 @@
-Rna gem
-===========
+# Rna gem
 
 [![Build History][2]][1]
 
@@ -8,15 +7,13 @@ Rna gem
 
 Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
 
-Requirements
-------------
+## Requirements
 
 <pre>
 $ gem install rna
 </pre>
 
-Usage
-------------
+## Usage
 
 <pre>
 $ mkdir rna_project
@@ -26,8 +23,9 @@ $ rna init
 
 This will sets starter config/rna.rb and config/s3.yml files.
 
-Example rna.rb file
-------------
+### Example:
+
+#### config/rna.rb file
 
 ```ruby
 # This is starter example rna template.
@@ -184,6 +182,8 @@ output/stag-api-resque.json:
 }
 ```
 
+#### Uploading to S3
+
 <pre>
 $ rna build -o s3 # saves s3 based on config/s3.yml settings
 </pre>
@@ -196,3 +196,12 @@ secret_access_key: opensesame
 bucket: my-bucket
 folder: chef/rna
 ```
+
+#### Breaking up config/rna.rb
+
+If you have a lot of roles, the config/rna.rb file can get unwieldy long.  You can break up the rna.rb file and put role defintions in the config/rna directory.  Any file in this directory will be automatically loaded. 
+
+An example is in the spec/project folder:
+
+* config/rna/api.rb
+* config/rna/masta.rb
