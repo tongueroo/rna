@@ -205,3 +205,29 @@ An example is in the spec/project folder:
 
 * config/rna/api.rb
 * config/rna/masta.rb
+
+#### Shared Settings
+
+You might want a shared settings hash that you can use in only some of your roles.  
+
+```ruby
+settings(
+  'foo' => 1
+)
+```
+
+You can use this any where in your roles.
+
+```ruby
+role 'role1' do
+  set 'foo', settings['foo']
+end
+
+role 'role2' do
+  set 'foo', settings['foo']
+end
+
+role 'role3' do
+  # dont set foo here
+end
+```

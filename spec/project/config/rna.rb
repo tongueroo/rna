@@ -22,6 +22,12 @@ role 'base' do
   role_list ['base']
 end
 
+settings(
+  'sendgrid' => {
+    "relayhost"=>"smtp.sendgrid.net"
+  }
+)
+
 ###################################
 # Post processing rules that run at the end
 post_rule do

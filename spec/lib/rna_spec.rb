@@ -92,6 +92,15 @@ describe Rna do
     json['masta_app'].should == 123
   end
 
+  it "should be able to read shared settings" do
+    @dsl.run
+    File.exist?("#{@project_root}/output/masta-app.json").should be_false
+    File.exist?("#{@project_root}/output/prod-masta-android.json").should be_true
+    json = JSON.load(IO.read("#{@project_root}/output/prod-masta-android.json"))
+    json['relayhost'].should == "smtp.sendgrid.net"
+    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
+    json['relayhost'].should == "smtp.sendgrid.net"
+  end
   ###################
 
   # only run when S3=1, will need to setup spec/project/config/s3.yml

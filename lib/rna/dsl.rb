@@ -23,6 +23,16 @@ module Rna
       end
     end
 
+    def settings(*data)
+      # reader method
+      if data.empty?
+        @settings
+      # writer method
+      else
+        @settings = data[0]
+      end
+    end
+
     def global(options={},&block)
       @global = {:options => options, :block => block}
     end
@@ -129,8 +139,16 @@ module Rna
 
     class Builder
       def build
-        instance_eval(&@block) if @block
+        if @block
+          @dsl = eval "self", @block.binding
+          instance_eval(&@block)
+        end
         @data
+      end
+
+      # http://www.dan-manges.com/blog/ruby-dsls-instance-eval-with-delegation
+      def settings(*args, &block)
+        @dsl.settings(*args, &block)
       end
 
       def set(key, value)

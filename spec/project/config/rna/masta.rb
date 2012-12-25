@@ -9,4 +9,5 @@ role 'prod-masta-android', 'stag-masta-android' do
   set 'application', 'masta'
   set 'deploy_code', true
   set 'repository', 'git@github.com:arockwell/masta_blasta.git'
+  set 'relayhost', settings['sendgrid']['relayhost']
 end

@@ -15,4 +15,5 @@ role 'prod-api-app', 'stag-api-app' do
           'redis' => nil
         }
       }
+  set 'relayhost', settings['sendgrid']['relayhost']
 end
