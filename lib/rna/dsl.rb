@@ -45,7 +45,7 @@ module Rna
     end
 
     def role(*names, &block)
-      names.each {|name| each_role(name, &block) }
+      names.flatten.each {|name| each_role(name, &block) }
     end
 
     def each_role(name, &block)
