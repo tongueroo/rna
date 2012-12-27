@@ -45,11 +45,9 @@ pre_rule do
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-settings(
-  :sendgrid => {
-    :relayhost => "smtp.sendgrid.net"
-  }
-)
+settings do
+  node[:sendgrid][:relayhost] = "smtp.sendgrid.net"
+end
 
 # Roles
 role 'base' do
@@ -69,7 +67,7 @@ end
 role 'prod-api-resque', 'stag-api-resque' do
   includes 'prod-api-app'
   run_list ['base','api_resque']
-  node[:workers], 8
+  node[:workers] = 8
 end
 
 
@@ -85,8 +83,7 @@ post_rule do
     role_list ['base', "#{repo}_#{role}"]
     node[:application] = repo
   end
-end
-```
+end```
 
 <pre>
 $ rna generate
