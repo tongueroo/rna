@@ -16,6 +16,7 @@ describe Rna do
     FileUtils.rm_rf("#{@project_root}/output")
   end
 
+  # uncomment to look a data deeper
   # it "should build attributes" do
   #   @dsl.evaluate
   #   @dsl.build
@@ -37,32 +38,32 @@ describe Rna do
     base['run_list'].should == ["role[base]"]
   end
 
-  it "base.json should not contain global attributes" do
+  it "base.json should not contain settings attributes" do
     @dsl.run
     base = JSON.load(IO.read("#{@project_root}/output/base.json"))
     base['framework_env'].should be_nil
     base['deploy_code'].should be_nil
   end
 
-  it "prod-api-redis.json should contain base and global attributes" do
+  it "prod-api-redis.json should contain base and settings attributes" do
     @dsl.run
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-redis.json"))
     json['role'].should == 'prod-api-redis'
     json['run_list'].should == ["role[base]", "role[api_redis]"]
     json['framework_env'].should == 'production'
-    json['deploy_code'].should == false
+    json['deploy_code'].should == nil
   end
 
-  it "stag-api-redis.json should contain base and global attributes and apply rules" do
+  it "stag-api-redis.json should contain base and settings attributes and apply rules" do
     @dsl.run
     json = JSON.load(IO.read("#{@project_root}/output/stag-api-redis.json"))
     json['role'].should == 'stag-api-redis'
     json['run_list'].should == ["role[base]", "role[api_redis]"]
-    json['deploy_code'].should == false
+    json['deploy_code'].should == nil
     json['framework_env'].should == 'staging' # this is tests the rule
   end
 
-  it "prod-api-app.json should contain base and global attributes" do
+  it "prod-api-app.json should contain base and settings attributes" do
     @dsl.run
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
     json['role'].should == 'prod-api-app'
@@ -70,6 +71,14 @@ describe Rna do
     json['deploy_code'].should == true
     json['framework_env'].should == 'production'
     json['scout'].should be_a(Hash)
+  end
+
+  it "prod-api-app.json should contain attributes from node" do
+    @dsl.run
+    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
+    json['database']['user'].should == 'user'
+    json['database']['pass'].should == 'pass'
+    json['database']['host'].should == 'host'
   end
 
   it "prod-api-app.json should contain pre and post rules" do
@@ -150,5 +159,68 @@ describe Rna do
     json['deploy_code'].should == true
     json['framework_env'].should == 'production'
     json['scout'].should be_a(Hash)
+  end
+end
+
+describe Node do
+  before(:each) do
+    @node = Node.new
+  end
+
+  it "should be able to set multiple levels deep even" do
+    @node[:a][:b][:c] = 2
+    @node[:a][:b][:c].should == 2
+  end
+
+  it "should convert to a hash with symbols as keys" do
+    @node[:a][:b][:c] = 2
+    @node[:a][:b][:c].should == 2
+    hash = @node.to_hash
+    # uncomment to see hash structure
+    # pp hash
+    # pp hash[:a][:b]
+    hash[:a][:b][:c].should == 2
+  end
+
+  it "should raise error if namespace is a non-node value and you try to access a value below that" do
+    @node[:a][:b] = 4
+    # this errors because it will run: 4[:c]
+    expect { @node[:a][:b][:c].class.should be_a(Node) }.to raise_error(TypeError)
+  end
+
+  it "should not adjust values set in other namespaces" do
+    @node[:a][:b][:c] = 2
+    @node[:a][:b][:c].should == 2
+    @node[:a][:b2] = 3
+    @node[:a][:b2].should == 3
+    @node[:a][:b][:c].should == 2
+    @node[:a][:b2].should == 3
+    @node[:a][:b3][:c] = 5
+    @node[:a][:b3][:c].should == 5
+  end
+
+  it "should behave like a mash" do
+    @node[:a][:b] = 4
+    @node[:a][:b].should == 4
+    @node[:a]['b'].should == 4
+
+    @node[:a]['c'] = 5
+    @node[:a][:c].should == 5
+    @node[:a]['c'].should == 5
+  end
+
+  it "should default to an empty Node object if never been set" do
+    @node[:one].should be_a(Node)
+    @node[:all][:roads][:lead][:to][:nothing].should be_a(Node)
+  end
+
+  it "should be able to set nil" do
+    @node[:a][:b4][:c] = nil
+    @node[:a][:b4][:c].should == nil
+  end
+
+  it "should be able to set false" do
+    @node[:a][:b4][:c] = false
+    @node[:a][:b4][:c].should == false
   end
 end

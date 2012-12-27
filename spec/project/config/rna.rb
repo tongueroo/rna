@@ -1,44 +1,37 @@
-###################################
-# Settings
-default_inherits 'base'
-global(:except => 'base') do
-  set 'application', nil
-  set 'deploy_code', false
-  set 'framework_env', 'production'
-  set 'repository', nil
-end
-
-###################################
+default_includes 'base'
+# Pre processing rules that run at the beginning
 pre_rule do
-  set 'pre_rule', 1
-  set 'chef_branch', 'prod' if role =~ /^prod/
-  set 'chef_branch', 'master' if role =~ /^stag/
+  if role != 'base'
+    node[:application] = nil
+    node[:deploy_code] = false
+    node[:framework_env] = 'production'
+    node[:repository] = nil
+  end
+
+  node[:pre_rule] = 1
+  node[:chef_branch] = 'prod' if role =~ /^prod/
+  node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-###################################
+settings do
+  node[:sendgrid][:relayhost] = "smtp.sendgrid.net"
+end
+
 # Roles
-# base
 role 'base' do
   role_list ['base']
 end
 
-settings(
-  'sendgrid' => {
-    "relayhost"=>"smtp.sendgrid.net"
-  }
-)
-
-###################################
 # Post processing rules that run at the end
 post_rule do
-  set 'post_rule', 2
-  set 'framework_env', 'production' if role =~ /^prod/
-  set 'framework_env', 'staging' if role =~ /^stag/
+  node[:post_rule] = 2
+  node[:framework_env] = 'production' if role =~ /^prod/
+  node[:framework_env] = 'staging' if role =~ /^stag/
 
   list = role.split('-')
   if list.size == 3
     env, repo, role = list
     role_list ['base', "#{repo}_#{role}"]
-    set 'application', repo
+    node[:application] = repo
   end
 end

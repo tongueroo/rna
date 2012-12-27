@@ -21,6 +21,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency "json"
   gem.add_dependency "thor"
   gem.add_dependency "aws-sdk"
+  gem.add_dependency "guard-rna"
 
   gem.add_development_dependency 'rspec'
   gem.add_development_dependency 'guard'

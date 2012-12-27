@@ -5,6 +5,7 @@ require 'aws-sdk'
 require 'pp'
 
 $:.unshift File.dirname(__FILE__)
+require 'node'
 require 'rna/version'
 require 'rna/cli'
 require 'rna/task'

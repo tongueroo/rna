@@ -30,46 +30,61 @@ This will sets starter config/rna.rb and config/s3.yml files.
 ```ruby
 # This is starter example rna template.
 # This is meant be be modified to your needs.
-###################################
-# Settings
-default_inherits 'base'
-global(:except => 'base') do
-  set 'framework_env', 'production'
-end
-
-###################################
+default_includes 'base'
+# Pre processing rules that run at the beginning
 pre_rule do
-  set 'chef_branch', 'prod' if role =~ /^prod/
-  set 'chef_branch', 'master' if role =~ /^stag/
+  if role != 'base'
+    node[:application] = nil
+    node[:deploy_code] = false
+    node[:framework_env] = 'production'
+    node[:repository] = nil
+  end
+
+  node[:pre_rule] = 1
+  node[:chef_branch] = 'prod' if role =~ /^prod/
+  node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-###################################
+settings(
+  :sendgrid => {
+    :relayhost => "smtp.sendgrid.net"
+  }
+)
+
 # Roles
-# base
 role 'base' do
-  run_list ['base']
+  role_list ['base']
 end
+
 # api
 role 'prod-api-redis', 'stag-api-redis' do
   run_list ['base','api_redis']
 end
 role 'prod-api-app', 'stag-api-app' do
   run_list ['base','api_app']
-  set 'application', 'api'
-  set 'deploy_code', true
-  set 'repository', 'git@github.com:br/api.git'
+  node[:application] = 'api'
+  node[:deploy_code] = true
+  node[:repository] = 'git@github.com:br/api.git'
 end
 role 'prod-api-resque', 'stag-api-resque' do
-  inherits 'prod-api-app'
+  includes 'prod-api-app'
   run_list ['base','api_resque']
-  set 'workers', 8
+  node[:workers], 8
 end
 
-###################################
+
 # Post processing rules that run at the end
 post_rule do
-  set 'framework_env', 'production' if role =~ /^prod/
-  set 'framework_env', 'staging' if role =~ /^stag/
+  node[:post_rule] = 2
+  node[:framework_env] = 'production' if role =~ /^prod/
+  node[:framework_env] = 'staging' if role =~ /^stag/
+
+  list = role.split('-')
+  if list.size == 3
+    env, repo, role = list
+    role_list ['base', "#{repo}_#{role}"]
+    node[:application] = repo
+  end
 end
 ```
 
@@ -77,16 +92,18 @@ end
 $ rna generate
 </pre>
 
-Here's the example of the output looks like:
+Here is the example of the output looks like:
 
 output/base.json:
 
 ```json
 {
+  "pre_rule": 1,
   "role": "base",
   "run_list": [
-    "base"
-  ]
+    "role[base]"
+  ],
+  "post_rule": 2
 }
 ```
 
@@ -94,15 +111,17 @@ output/prod-api-app.json:
 
 ```json
 {
-  "framework_env": "production",
+  "pre_rule": 1,
   "role": "prod-api-app",
   "run_list": [
-    "base",
-    "api_app"
+    "role[base]",
+    "role[api_app]"
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git"
+  "repository": "git@github.com:br/api.git",
+  "post_rule": 2,
+  "framework_env": "production"
 }
 ```
 
@@ -110,12 +129,15 @@ output/prod-api-redis.json:
 
 ```json
 {
-  "framework_env": "production",
+  "pre_rule": 1,
   "role": "prod-api-redis",
   "run_list": [
-    "base",
-    "api_redis"
-  ]
+    "role[base]",
+    "role[api_redis]"
+  ],
+  "post_rule": 2,
+  "framework_env": "production",
+  "application": "api"
 }
 ```
 
@@ -123,16 +145,18 @@ output/prod-api-resque.json:
 
 ```json
 {
-  "framework_env": "production",
+  "pre_rule": 1,
   "role": "prod-api-resque",
   "run_list": [
-    "base",
-    "api_resque"
+    "role[base]",
+    "role[api_resque]"
   ],
   "application": "api",
   "deploy_code": true,
   "repository": "git@github.com:br/api.git",
-  "workers": 8
+  "workers": 8,
+  "post_rule": 2,
+  "framework_env": "production"
 }
 ```
 
@@ -140,15 +164,17 @@ output/stag-api-app.json:
 
 ```json
 {
-  "framework_env": "staging",
+  "pre_rule": 1,
   "role": "stag-api-app",
   "run_list": [
-    "base",
-    "api_app"
+    "role[base]",
+    "role[api_app]"
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git"
+  "repository": "git@github.com:br/api.git",
+  "post_rule": 2,
+  "framework_env": "staging"
 }
 ```
 
@@ -156,12 +182,15 @@ output/stag-api-redis.json:
 
 ```json
 {
-  "framework_env": "staging",
+  "pre_rule": 1,
   "role": "stag-api-redis",
   "run_list": [
-    "base",
-    "api_redis"
-  ]
+    "role[base]",
+    "role[api_redis]"
+  ],
+  "post_rule": 2,
+  "framework_env": "staging",
+  "application": "api"
 }
 ```
 
@@ -169,16 +198,18 @@ output/stag-api-resque.json:
 
 ```json
 {
-  "framework_env": "staging",
+  "pre_rule": 1,
   "role": "stag-api-resque",
   "run_list": [
-    "base",
-    "api_resque"
+    "role[base]",
+    "role[api_resque]"
   ],
   "application": "api",
   "deploy_code": true,
   "repository": "git@github.com:br/api.git",
-  "workers": 8
+  "workers": 8,
+  "post_rule": 2,
+  "framework_env": "staging"
 }
 ```
 
@@ -211,20 +242,20 @@ An example is in the spec/project folder:
 You might want a shared settings hash that you can use in only some of your roles.  
 
 ```ruby
-settings(
-  'foo' => 1
-)
+settings do
+  node[:foo] = 1
+end
 ```
 
 You can use this any where in your roles.
 
 ```ruby
 role 'role1' do
-  set 'foo', settings['foo']
+  node[:foo] = settings[:foo]
 end
 
 role 'role2' do
-  set 'foo', settings['foo']
+  node[:foo] = settings[:foo]
 end
 
 role 'role3' do
