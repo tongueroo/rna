@@ -131,7 +131,7 @@ module Rna
 
       # http://www.dan-manges.com/blog/ruby-dsls-instance-eval-with-delegation
       def settings
-        @dsl.settings_node
+        @dsl.settings_node.to_hash
       end
 
       def node
