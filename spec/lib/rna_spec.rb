@@ -182,6 +182,17 @@ describe Node do
     hash[:a][:b][:c].should == 2
   end
 
+  it "should convert to a mash" do
+    @node[:a][:b][:c] = 2
+    @node[:a][:b][:c].should == 2
+    hash = @node.to_mash
+    # uncomment to see hash structure
+    # pp hash
+    # pp hash[:a][:b]
+    hash[:a][:b][:c].should == 2
+    hash['a'][:b]['c'].should == 2
+  end
+
   it "should raise error if namespace is a non-node value and you try to access a value below that" do
     @node[:a][:b] = 4
     # this errors because it will run: 4[:c]

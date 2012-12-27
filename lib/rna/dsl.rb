@@ -125,13 +125,13 @@ module Rna
           @dsl = eval "self", @block.binding
           instance_eval(&@block)
         end        
-        @data[:attributes].merge!(set.to_hash)
+        @data[:attributes].merge!(set.to_mash)
         @data
       end
 
       # http://www.dan-manges.com/blog/ruby-dsls-instance-eval-with-delegation
       def settings
-        @dsl.settings_node.to_hash
+        @dsl.settings_node.to_mash
       end
 
       def node

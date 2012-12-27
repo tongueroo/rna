@@ -1,3 +1,5 @@
+require 'mash'
+
 class Node < Hash
   class Attribute
     attr_reader :value
@@ -46,6 +48,10 @@ class Node < Hash
       end
     end
     hash
+  end
+
+  def to_mash
+    Mash.from_hash(to_hash)
   end
 
 private
