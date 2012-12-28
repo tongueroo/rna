@@ -8,7 +8,7 @@ role 'prod-api-app', 'stag-api-app' do
   role_list ['base','api_app']
   node[:application] = 'api'
   node[:deploy_code] = true
-  node[:repository] = 'git@github.com:br/api.git'
+  node[:repository] = 'git@github.com:owner/repo.git/api.git'
   node[:scout][:key] = 'abc'
   node[:scout][:gems] = {'redis' => nil}
   node[:relayhost] = settings[:sendgrid][:relayhost]

@@ -62,7 +62,7 @@ role 'prod-api-app', 'stag-api-app' do
   run_list ['base','api_app']
   node[:application] = 'api'
   node[:deploy_code] = true
-  node[:repository] = 'git@github.com:br/api.git'
+  node[:repository] = 'git@github.com:owner/repo.git/api.git'
 end
 role 'prod-api-resque', 'stag-api-resque' do
   includes 'prod-api-app'
@@ -154,7 +154,7 @@ output/prod-api-app.json:
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git",
+  "repository": "git@github.com:owner/repo.git/api.git",
   "post_rule": 2,
   "framework_env": "production"
 }
@@ -188,7 +188,7 @@ output/prod-api-resque.json:
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git",
+  "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
   "post_rule": 2,
   "framework_env": "production"
@@ -207,7 +207,7 @@ output/stag-api-app.json:
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git",
+  "repository": "git@github.com:owner/repo.git/api.git",
   "post_rule": 2,
   "framework_env": "staging"
 }
@@ -241,7 +241,7 @@ output/stag-api-resque.json:
   ],
   "application": "api",
   "deploy_code": true,
-  "repository": "git@github.com:br/api.git",
+  "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
   "post_rule": 2,
   "framework_env": "staging"
