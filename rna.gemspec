@@ -4,11 +4,9 @@ require File.expand_path('../lib/rna/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Tung Nguyen"]
   gem.email         = ["tongueroo@gmail.com"]
-  gem.description   = %q{Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
-.}
-  gem.summary       = %q{Rna is a ruby gem that provides simple DSL for generating node.json files required by chef-solo.
-.}
-  gem.homepage      = ""
+  gem.description   = %q{Rna is a simple DSL for generating node.json files required by chef-solo.}
+  gem.summary       = %q{Rna is a simple DSL for generating node.json files required by chef-solo.}
+  gem.homepage      = "http://github.com/tongueroo/rna"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

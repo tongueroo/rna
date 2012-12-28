@@ -21,7 +21,7 @@ $ cd rna_project
 $ rna init
 </pre>
 
-This will sets starter config/rna.rb and config/s3.yml files.
+This will create starter config/rna.rb and config/s3.yml files.
 
 ### Example:
 
@@ -83,7 +83,45 @@ post_rule do
     role_list ['base', "#{repo}_#{role}"]
     node[:application] = repo
   end
-end```
+end
+```
+
+#### Shared Settings
+
+You might want a shared settings hash that you can use in only some of your roles.
+
+```ruby
+settings do
+  node[:foo] = 1
+end
+```
+
+You can use this any where in your roles.
+
+```ruby
+role 'role1' do
+  node[:foo] = settings[:foo]
+end
+
+role 'role2' do
+  node[:foo] = settings[:foo]
+end
+
+role 'role3' do
+  # dont set foo here
+end
+```
+
+#### Breaking up config/rna.rb
+
+If you have a lot of roles, the config/rna.rb file can get unwieldy long.  You can break up the rna.rb file and put role defintions in the config/rna directory.  Any file in this directory will be automatically loaded. 
+
+An example is in the spec/project folder:
+
+* config/rna/api.rb
+* config/rna/masta.rb
+
+#### Generating the json files
 
 <pre>
 $ rna generate
@@ -223,39 +261,4 @@ access_key_id: hocuspocus
 secret_access_key: opensesame
 bucket: my-bucket
 folder: chef/rna
-```
-
-#### Breaking up config/rna.rb
-
-If you have a lot of roles, the config/rna.rb file can get unwieldy long.  You can break up the rna.rb file and put role defintions in the config/rna directory.  Any file in this directory will be automatically loaded. 
-
-An example is in the spec/project folder:
-
-* config/rna/api.rb
-* config/rna/masta.rb
-
-#### Shared Settings
-
-You might want a shared settings hash that you can use in only some of your roles.  
-
-```ruby
-settings do
-  node[:foo] = 1
-end
-```
-
-You can use this any where in your roles.
-
-```ruby
-role 'role1' do
-  node[:foo] = settings[:foo]
-end
-
-role 'role2' do
-  node[:foo] = settings[:foo]
-end
-
-role 'role3' do
-  # dont set foo here
-end
 ```
