@@ -6,10 +6,6 @@ class Node < Hash
     def initialize(value)
       @value = value
     end
-    def [](key)
-      puts "Node::Attribute key #{key}"
-      nil
-    end
   end
 
   def initialize
@@ -26,16 +22,16 @@ class Node < Hash
 
   def [](key)
     key = convert_key(key)
-    if @data[key].nil?
-      result = @data[key] = Node.new
-    elsif @data[key].is_a?(Node::Attribute)
-      result = @data[key].value
-    elsif @data[key].is_a?(Node)
-      result = @data[key]
+    case @data[key]
+    when nil
+      @data[key] = Node.new
+    when Node::Attribute
+      @data[key].value
+    when Node
+      @data[key]
     else
       raise "should never happen"
     end
-    result
   end
 
   def to_hash
