@@ -45,9 +45,7 @@ pre_rule do
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-settings do
-  node[:sendgrid][:relayhost] = "smtp.sendgrid.net"
-end
+settings[:sendgrid][:relayhost] = "smtp.sendgrid.net"
 
 # Roles
 role 'base' do
@@ -62,6 +60,10 @@ role 'prod-api-app', 'stag-api-app' do
   run_list ['base','api_app']
   node[:application] = 'api'
   node[:deploy_code] = true
+  node[:database][:adapter] = "mysql"
+  node[:database][:host] = "127.0.0.1"
+  node[:database][:user] = "user"
+  node[:database][:pass] = "pass"
   node[:repository] = 'git@github.com:owner/repo.git/api.git'
 end
 role 'prod-api-resque', 'stag-api-resque' do
@@ -91,24 +93,23 @@ end
 You might want a shared settings hash that you can use in only some of your roles.
 
 ```ruby
-settings do
-  node[:foo] = 1
-end
+settings[:foo][:bar] = 1
+settings[:foo][:baz] = 2
 ```
 
 You can use this any where in your roles.
 
 ```ruby
 role 'role1' do
-  node[:foo] = settings[:foo]
+  node[:foo][:bar] = settings[:foo][:bar]
 end
 
 role 'role2' do
-  node[:foo] = settings[:foo]
+  node[:foo][:bar] = settings[:foo][:bar]
 end
 
 role 'role3' do
-  # dont set foo here
+  node[:foo][:baz] = settings[:foo][:baz]
 end
 ```
 
@@ -129,7 +130,7 @@ $ rna generate
 
 Here is the example of the output looks like:
 
-output/base.json:
+base.json:
 
 ```json
 {
@@ -142,7 +143,7 @@ output/base.json:
 }
 ```
 
-output/prod-api-app.json:
+prod-api-app.json:
 
 ```json
 {
@@ -154,13 +155,19 @@ output/prod-api-app.json:
   ],
   "application": "api",
   "deploy_code": true,
+  "database": {
+    "adapter": "mysql",
+    "host": "127.0.0.1",
+    "user": "user",
+    "pass": "pass"
+  },
   "repository": "git@github.com:owner/repo.git/api.git",
   "post_rule": 2,
   "framework_env": "production"
 }
 ```
 
-output/prod-api-redis.json:
+prod-api-redis.json:
 
 ```json
 {
@@ -176,7 +183,7 @@ output/prod-api-redis.json:
 }
 ```
 
-output/prod-api-resque.json:
+prod-api-resque.json:
 
 ```json
 {
@@ -188,6 +195,12 @@ output/prod-api-resque.json:
   ],
   "application": "api",
   "deploy_code": true,
+  "database": {
+    "adapter": "mysql",
+    "host": "127.0.0.1",
+    "user": "user",
+    "pass": "pass"
+  },
   "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
   "post_rule": 2,
@@ -195,7 +208,7 @@ output/prod-api-resque.json:
 }
 ```
 
-output/stag-api-app.json:
+stag-api-app.json:
 
 ```json
 {
@@ -207,13 +220,19 @@ output/stag-api-app.json:
   ],
   "application": "api",
   "deploy_code": true,
+  "database": {
+    "adapter": "mysql",
+    "host": "127.0.0.1",
+    "user": "user",
+    "pass": "pass"
+  },
   "repository": "git@github.com:owner/repo.git/api.git",
   "post_rule": 2,
   "framework_env": "staging"
 }
 ```
 
-output/stag-api-redis.json:
+stag-api-redis.json:
 
 ```json
 {
@@ -229,7 +248,7 @@ output/stag-api-redis.json:
 }
 ```
 
-output/stag-api-resque.json:
+stag-api-resque.json:
 
 ```json
 {
@@ -241,6 +260,12 @@ output/stag-api-resque.json:
   ],
   "application": "api",
   "deploy_code": true,
+  "database": {
+    "adapter": "mysql",
+    "host": "127.0.0.1",
+    "user": "user",
+    "pass": "pass"
+  },
   "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
   "post_rule": 2,

@@ -1,6 +1,6 @@
 module Rna
   class DSL
-    attr_reader :data, :jsons, :settings_node
+    attr_reader :data, :jsons
     def initialize(options={})
       @options = options
 
@@ -22,15 +22,12 @@ module Rna
       end
     end
 
-    def settings_node
-      @settings_node ||= Node.new
+    def settings
+      @settings ||= Node.new
     end
-    alias_method :set, :settings_node
-    alias_method :node, :settings_node
-
-    def settings(&block)
-      instance_eval(&block)
-    end
+    alias_method :set, :settings
+    alias_method :node, :settings
+    alias_method :default, :settings
 
     def default_includes(role)
       Role.default_includes = role
@@ -131,7 +128,7 @@ module Rna
 
       # http://www.dan-manges.com/blog/ruby-dsls-instance-eval-with-delegation
       def settings
-        @dsl.settings_node.to_mash
+        @dsl.settings.to_mash
       end
 
       def node

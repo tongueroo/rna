@@ -15,9 +15,7 @@ pre_rule do
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-settings do
-  node[:sendgrid][:relayhost] = "smtp.sendgrid.net"
-end
+settings[:sendgrid][:relayhost] = "smtp.sendgrid.net"
 
 # Roles
 role 'base' do
@@ -32,6 +30,10 @@ role 'prod-api-app', 'stag-api-app' do
   run_list ['base','api_app']
   node[:application] = 'api'
   node[:deploy_code] = true
+  node[:database][:adapter] = "mysql"
+  node[:database][:host] = "127.0.0.1"
+  node[:database][:user] = "user"
+  node[:database][:pass] = "pass"
   node[:repository] = 'git@github.com:owner/repo.git/api.git'
 end
 role 'prod-api-resque', 'stag-api-resque' do

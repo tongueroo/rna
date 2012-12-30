@@ -1,3 +1,5 @@
+# This is starter example rna template.
+# This is meant be be modified to your needs.
 default_includes 'base'
 # Pre processing rules that run at the beginning
 pre_rule do
@@ -13,9 +15,7 @@ pre_rule do
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
 
-settings do
-  node[:sendgrid][:relayhost] = "smtp.sendgrid.net"
-end
+settings[:sendgrid][:relayhost] = "smtp.sendgrid.net"
 
 # Roles
 role 'base' do

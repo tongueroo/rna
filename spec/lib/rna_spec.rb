@@ -78,7 +78,7 @@ describe Rna do
     json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
     json['database']['user'].should == 'user'
     json['database']['pass'].should == 'pass'
-    json['database']['host'].should == 'host'
+    json['database']['host'].should == '127.0.0.1'
   end
 
   it "prod-api-app.json should contain pre and post rules" do

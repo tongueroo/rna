@@ -9,11 +9,11 @@ role 'prod-api-app', 'stag-api-app' do
   node[:application] = 'api'
   node[:deploy_code] = true
   node[:repository] = 'git@github.com:owner/repo.git/api.git'
+  node[:database][:adapter] = "mysql"
+  node[:database][:host] = "127.0.0.1"
+  node[:database][:user] = "user"
+  node[:database][:pass] = "pass"
   node[:scout][:key] = 'abc'
   node[:scout][:gems] = {'redis' => nil}
   node[:relayhost] = settings[:sendgrid][:relayhost]
-
-  node[:database][:user] = 'user'
-  node[:database][:pass] = 'pass'
-  node[:database][:host] = 'host'
 end
