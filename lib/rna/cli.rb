@@ -21,8 +21,10 @@ Builds the node.json files based on config/rna.rb and writes them to s3 based on
 EOL
     method_option :output, :aliases => '-o', :desc => "specify where to output the generated files to", :default => 'filesystem'
     method_option :clean, :type => :boolean, :aliases => "-c", :desc => "remove all output files before generating"
+    method_option :verbose, :type => :boolean, :aliases => "-v", :desc => "show files being generated"
     def generate
-      Rna::Task.generate(options.dup.merge(:verbose => true))
+      Rna::Task.generate(options)
+      puts "Rna files generated"
     end
   end
   
