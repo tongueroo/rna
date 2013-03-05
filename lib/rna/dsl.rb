@@ -7,8 +7,8 @@ module Rna
       @path = "#{@project_root}/config/rna.rb"
       @options[:output_path] = "#{@project_root}/output"
 
-      @pre_rule = nil
-      @post_rule = nil
+      @before = nil
+      @after = nil
       @roles = []
     end
 
@@ -35,12 +35,12 @@ module Rna
       Role.default_includes = role
     end
 
-    def pre_rule(&block)
-      @pre_rule = {:block => block}
+    def before(&block)
+      @before = {:block => block}
     end
 
-    def post_rule(&block)
-      @post_rule = {:block => block}
+    def after(&block)
+      @after = {:block => block}
     end
 
     def role(*names, &block)
@@ -88,8 +88,8 @@ module Rna
         json = process_role(includes, depth+1)
       else
         json = {}
-        if @pre_rule
-          pre_data = Rule.new(role, @pre_rule[:block]).build
+        if @before
+          pre_data = Rule.new(role, @before[:block]).build
           json.deep_merge!(pre_data[:attributes])
         end
       end
@@ -97,8 +97,8 @@ module Rna
       attributes = role_data[:attributes] || {}
       json.deep_merge!(attributes)
       # only process post rule at the very last step
-      if @post_rule and depth == 1
-        post_data = Rule.new(role, @post_rule[:block]).build
+      if @after and depth == 1
+        post_data = Rule.new(role, @after[:block]).build
         json.deep_merge!(post_data[:attributes])
       end
       json

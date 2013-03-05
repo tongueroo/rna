@@ -110,8 +110,8 @@ describe Rna do
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
       json['scout'].should be_a(Hash)
-      json['pre_rule'].should == 1
-      json['post_rule'].should == 2
+      json['before'].should == 1
+      json['after'].should == 2
     end
 
     it "masta-app should not generate output file" do

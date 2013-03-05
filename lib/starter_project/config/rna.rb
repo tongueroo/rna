@@ -2,7 +2,7 @@
 # This is meant be be modified to your needs.
 default_includes 'base'
 # Pre processing rules that run at the beginning
-pre_rule do
+before do
   if role != 'base'
     node[:application] = nil
     node[:deploy_code] = false
@@ -10,7 +10,7 @@ pre_rule do
     node[:repository] = nil
   end
 
-  node[:pre_rule] = 1
+  node[:before] = 1
   node[:chef_branch] = 'prod' if role =~ /^prod/
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
@@ -23,8 +23,8 @@ role 'base' do
 end
 
 # Post processing rules that run at the end
-post_rule do
-  node[:post_rule] = 2
+after do
+  node[:after] = 2
   node[:framework_env] = 'production' if role =~ /^prod/
   node[:framework_env] = 'staging' if role =~ /^stag/
 

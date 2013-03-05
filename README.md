@@ -32,7 +32,7 @@ This will create starter config/rna.rb and config/s3.yml files.
 # This is meant be be modified to your needs.
 default_includes 'base'
 # Pre processing rules that run at the beginning
-pre_rule do
+before do
   if role != 'base'
     node[:application] = nil
     node[:deploy_code] = false
@@ -40,7 +40,7 @@ pre_rule do
     node[:repository] = nil
   end
 
-  node[:pre_rule] = 1
+  node[:before] = 1
   node[:chef_branch] = 'prod' if role =~ /^prod/
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
@@ -74,8 +74,8 @@ end
 
 
 # Post processing rules that run at the end
-post_rule do
-  node[:post_rule] = 2
+after do
+  node[:after] = 2
   node[:framework_env] = 'production' if role =~ /^prod/
   node[:framework_env] = 'staging' if role =~ /^stag/
 
@@ -134,12 +134,12 @@ base.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "base",
   "run_list": [
     "role[base]"
   ],
-  "post_rule": 2
+  "after": 2
 }
 ```
 
@@ -147,7 +147,7 @@ prod-api-app.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "prod-api-app",
   "run_list": [
     "role[base]",
@@ -162,7 +162,7 @@ prod-api-app.json:
     "pass": "pass"
   },
   "repository": "git@github.com:owner/repo.git/api.git",
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "production"
 }
 ```
@@ -171,13 +171,13 @@ prod-api-redis.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "prod-api-redis",
   "run_list": [
     "role[base]",
     "role[api_redis]"
   ],
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "production",
   "application": "api"
 }
@@ -187,7 +187,7 @@ prod-api-resque.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "prod-api-resque",
   "run_list": [
     "role[base]",
@@ -203,7 +203,7 @@ prod-api-resque.json:
   },
   "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "production"
 }
 ```
@@ -212,7 +212,7 @@ stag-api-app.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "stag-api-app",
   "run_list": [
     "role[base]",
@@ -227,7 +227,7 @@ stag-api-app.json:
     "pass": "pass"
   },
   "repository": "git@github.com:owner/repo.git/api.git",
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "staging"
 }
 ```
@@ -236,13 +236,13 @@ stag-api-redis.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "stag-api-redis",
   "run_list": [
     "role[base]",
     "role[api_redis]"
   ],
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "staging",
   "application": "api"
 }
@@ -252,7 +252,7 @@ stag-api-resque.json:
 
 ```json
 {
-  "pre_rule": 1,
+  "before": 1,
   "role": "stag-api-resque",
   "run_list": [
     "role[base]",
@@ -268,7 +268,7 @@ stag-api-resque.json:
   },
   "repository": "git@github.com:owner/repo.git/api.git",
   "workers": 8,
-  "post_rule": 2,
+  "after": 2,
   "framework_env": "staging"
 }
 ```
