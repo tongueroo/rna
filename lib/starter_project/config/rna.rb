@@ -22,27 +22,6 @@ role 'base' do
   role_list ['base']
 end
 
-# api
-role 'prod-api-redis', 'stag-api-redis' do
-  run_list ['base','api_redis']
-end
-role 'prod-api-app', 'stag-api-app' do
-  run_list ['base','api_app']
-  node[:application] = 'api'
-  node[:deploy_code] = true
-  node[:database][:adapter] = "mysql"
-  node[:database][:host] = "127.0.0.1"
-  node[:database][:user] = "user"
-  node[:database][:pass] = "pass"
-  node[:repository] = 'git@github.com:owner/repo.git/api.git'
-end
-role 'prod-api-resque', 'stag-api-resque' do
-  includes 'prod-api-app'
-  run_list ['base','api_resque']
-  node[:workers] = 8
-end
-
-
 # Post processing rules that run at the end
 post_rule do
   node[:post_rule] = 2

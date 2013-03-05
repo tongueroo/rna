@@ -8,7 +8,6 @@ module Rna
   
   class Filesystem < Outputer
     def run(jsons)
-      # options[:output_path] only used for specs
       output_path = options[:output_path] || "output"
       FileUtils.rm_rf(output_path) if options[:clean]
       FileUtils.mkdir(output_path) unless File.exist?(output_path)

@@ -16,8 +16,8 @@ $ gem install rna
 ## Usage
 
 <pre>
-$ mkdir rna_project
-$ cd rna_project
+$ mkdir rna
+$ cd rna
 $ rna init
 </pre>
 
@@ -120,7 +120,7 @@ If you have a lot of roles, the config/rna.rb file can get unwieldy long.  You c
 An example is in the spec/project folder:
 
 * config/rna/api.rb
-* config/rna/masta.rb
+* config/rna/blog.rb
 
 #### Generating the json files
 
