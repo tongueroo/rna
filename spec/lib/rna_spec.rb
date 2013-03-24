@@ -43,7 +43,6 @@ describe Rna do
     it "base.json should contain correct attributes" do
       @dsl.run
       base = JSON.load(IO.read("#{@project}/output/base.json"))
-      base['role'].should == 'base'
       base['run_list'].should == ["role[base]"]
     end
 
@@ -57,7 +56,6 @@ describe Rna do
     it "prod-api-redis.json should contain base and settings attributes" do
       @dsl.run
       json = JSON.load(IO.read("#{@project}/output/prod-api-redis.json"))
-      json['role'].should == 'prod-api-redis'
       json['run_list'].should == ["role[base]", "role[api_redis]"]
       json['framework_env'].should == 'production'
       json['deploy_code'].should == nil
@@ -66,7 +64,6 @@ describe Rna do
     it "prod-api-resque should contain inherited attributes" do
       @dsl.run
       json = JSON.load(IO.read("#{@project}/output/prod-api-resque.json"))
-      json['role'].should == 'prod-api-resque'
       json['run_list'].should == ["role[base]","role[api_resque]"]
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
@@ -78,7 +75,6 @@ describe Rna do
     it "stag-api-redis.json should contain base and settings attributes and apply rules" do
       @dsl.run
       json = JSON.load(IO.read("#{@project}/output/stag-api-redis.json"))
-      json['role'].should == 'stag-api-redis'
       json['run_list'].should == ["role[base]", "role[api_redis]"]
       json['deploy_code'].should == nil
       json['framework_env'].should == 'staging' # this is tests the rule
@@ -87,7 +83,6 @@ describe Rna do
     it "prod-api-app.json should contain base and settings attributes" do
       @dsl.run
       json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
-      json['role'].should == 'prod-api-app'
       json['run_list'].should == ["role[base]","role[api_app]"]
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
@@ -105,7 +100,6 @@ describe Rna do
     it "prod-api-app.json should contain pre and post rules" do
       @dsl.run
       json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
-      json['role'].should == 'prod-api-app'
       json['run_list'].should == ["role[base]","role[api_app]"]
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
@@ -148,7 +142,6 @@ describe Rna do
       raw = bucket.objects["#{config['folder']}/prod-api-app.json"].read
 
       json = JSON.load(raw)
-      json['role'].should == 'prod-api-app'
       json['run_list'].should == ["role[base]","role[api_app]"]
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
@@ -171,7 +164,6 @@ describe Rna do
         :project_root => @project
       )
       json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
-      json['role'].should == 'prod-api-app'
       json['run_list'].should == ["role[base]","role[api_app]"]
       json['deploy_code'].should == true
       json['framework_env'].should == 'production'
