@@ -174,9 +174,7 @@ module Rna
 
         @data = {
           :name => name,
-          :attributes => {
-            :role => name
-          },
+          :attributes => {},
           :includes => @@default_includes != name ? @@default_includes : nil,
           :output => true
         }
