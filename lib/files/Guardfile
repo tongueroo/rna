@@ -1,3 +1,0 @@
-guard "rna" do
-  watch(%r{^config/rna.rb$})
-end

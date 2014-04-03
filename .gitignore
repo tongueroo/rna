@@ -17,3 +17,5 @@ test/tmp
 test/version_tmp
 tmp
 output
+spec/project
+config/aws.yml

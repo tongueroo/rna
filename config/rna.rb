@@ -2,7 +2,7 @@
 # This is meant be be modified to your needs.
 default_includes 'base'
 # Pre processing rules that run at the beginning
-pre_rule do
+before do
   if role != 'base'
     node[:application] = nil
     node[:deploy_code] = false
@@ -10,7 +10,7 @@ pre_rule do
     node[:repository] = nil
   end
 
-  node[:pre_rule] = 1
+  node[:before] = 1
   node[:chef_branch] = 'prod' if role =~ /^prod/
   node[:chef_branch] = 'master' if role =~ /^stag/
 end
@@ -22,30 +22,9 @@ role 'base' do
   role_list ['base']
 end
 
-# api
-role 'prod-api-redis', 'stag-api-redis' do
-  run_list ['base','api_redis']
-end
-role 'prod-api-app', 'stag-api-app' do
-  run_list ['base','api_app']
-  node[:application] = 'api'
-  node[:deploy_code] = true
-  node[:database][:adapter] = "mysql"
-  node[:database][:host] = "127.0.0.1"
-  node[:database][:user] = "user"
-  node[:database][:pass] = "pass"
-  node[:repository] = 'git@github.com:owner/repo.git/api.git'
-end
-role 'prod-api-resque', 'stag-api-resque' do
-  includes 'prod-api-app'
-  run_list ['base','api_resque']
-  node[:workers] = 8
-end
-
-
 # Post processing rules that run at the end
-post_rule do
-  node[:post_rule] = 2
+after do
+  node[:after] = 2
   node[:framework_env] = 'production' if role =~ /^prod/
   node[:framework_env] = 'staging' if role =~ /^stag/
 

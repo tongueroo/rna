@@ -1,165 +1,176 @@
-require 'rna'
-require 'rspec'
-require 'pp'
+require File.expand_path("../../spec_helper", __FILE__)
 
 describe Rna do
   before(:each) do
-    @project_root = File.expand_path("../../project", __FILE__)
-    @project2_root = File.expand_path("../../project2", __FILE__)
-    @dsl = Rna::DSL.new(
-      :config_path => "#{@project_root}/config/rna.rb",
-      :output_path => "#{@project_root}/output"
-    )
+    @project = File.expand_path("../../project", __FILE__)
+    FileUtils.mkdir(@project) unless File.exist?(@project)
+    execute("./bin/rna init -f -q --project-root #{@project}")
   end
 
   after(:each) do
-    FileUtils.rm_rf("#{@project_root}/output")
+    FileUtils.rm_rf("#{@project}/output")
   end
 
-  # uncomment to look a data deeper
-  # it "should build attributes" do
-  #   @dsl.evaluate
-  #   @dsl.build
-  #   pp @dsl.data
-  #   @dsl.process
-  #   pp @dsl.jsons
-  # end
-
-  it "should write json files to outputs folder" do
-    @dsl.run
-    Dir.glob("#{@project_root}/output/*").size.should > 0
+  describe "cli specs" do
+    it "should generate templates" do
+      out = execute("./bin/rna generate -c --project-root #{@project}")
+      out.should match /Generating rna files/
+    end
   end
 
-  # complete end to end tests
-  it "base.json should contain correct attributes" do
-    @dsl.run
-    base = JSON.load(IO.read("#{@project_root}/output/base.json"))
-    base['role'].should == 'base'
-    base['run_list'].should == ["role[base]"]
+  describe "ruby specs" do
+    before(:each) do
+      @dsl = Rna::DSL.new(
+        :quiet => true,
+        :project_root => @project
+      ) 
+    end
+
+    it "should build attributes" do
+      @dsl.evaluate
+      @dsl.build
+      pp @dsl.data
+      @dsl.process
+      pp @dsl.jsons
+    end if ENV['DEBUG']
+
+    it "should write json files to outputs folder" do
+      @dsl.run
+      Dir.glob("#{@project}/output/*").size.should > 0
+    end
+
+    # complete end to end tests
+    it "base.json should contain correct attributes" do
+      @dsl.run
+      base = JSON.load(IO.read("#{@project}/output/base.json"))
+      base['run_list'].should == ["role[base]"]
+    end
+
+    it "base.json should not contain settings attributes" do
+      @dsl.run
+      base = JSON.load(IO.read("#{@project}/output/base.json"))
+      base['framework_env'].should be_nil
+      base['deploy_code'].should be_nil
+    end
+
+    it "prod-api-redis.json should contain base and settings attributes" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/prod-api-redis.json"))
+      json['run_list'].should == ["role[base]", "role[api_redis]"]
+      json['framework_env'].should == 'production'
+      json['deploy_code'].should == nil
+    end
+
+    it "prod-api-resque should contain inherited attributes" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/prod-api-resque.json"))
+      json['run_list'].should == ["role[base]","role[api_resque]"]
+      json['deploy_code'].should == true
+      json['framework_env'].should == 'production'
+      json['scout'].should be_a(Hash)
+      json['database']['adapter'].should == "mysql"
+      json['scout'].should be_a(Hash)
+    end
+
+    it "stag-api-redis.json should contain base and settings attributes and apply rules" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/stag-api-redis.json"))
+      json['run_list'].should == ["role[base]", "role[api_redis]"]
+      json['deploy_code'].should == nil
+      json['framework_env'].should == 'staging' # this is tests the rule
+    end
+
+    it "prod-api-app.json should contain base and settings attributes" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
+      json['run_list'].should == ["role[base]","role[api_app]"]
+      json['deploy_code'].should == true
+      json['framework_env'].should == 'production'
+      json['scout'].should be_a(Hash)
+    end
+
+    it "prod-api-app.json should contain attributes from node" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
+      json['database']['user'].should == 'user'
+      json['database']['pass'].should == 'pass'
+      json['database']['host'].should == '127.0.0.1'
+    end
+
+    it "prod-api-app.json should contain pre and post rules" do
+      @dsl.run
+      json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
+      json['run_list'].should == ["role[base]","role[api_app]"]
+      json['deploy_code'].should == true
+      json['framework_env'].should == 'production'
+      json['scout'].should be_a(Hash)
+      json['before'].should == 1
+      json['after'].should == 2
+    end
+
+    it "masta-app should not generate output file" do
+      @dsl.run
+      File.exist?("#{@project}/output/masta-app.json").should be_false
+      File.exist?("#{@project}/output/prod-masta-android.json").should be_true
+      json = JSON.load(IO.read("#{@project}/output/prod-masta-android.json"))
+      json['masta_app'].should == 123
+    end
+
+    it "should be able to read shared settings" do
+      @dsl.run
+      File.exist?("#{@project}/output/masta-app.json").should be_false
+      File.exist?("#{@project}/output/prod-masta-android.json").should be_true
+      json = JSON.load(IO.read("#{@project}/output/prod-masta-android.json"))
+      json['relayhost'].should == "smtp.sendgrid.net"
+      json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
+      json['relayhost'].should == "smtp.sendgrid.net"
+    end
+    ###################
+
+    # only run when S3=1, will need to setup spec/project/config/s3.yml
+    it "should upload to s3" do
+      @dsl = Rna::DSL.new(
+        :output => 's3', 
+        :s3_config_path => "#{@project}/config/s3.yml",
+        :project_root => @project
+      )
+      outputer = @dsl.run
+
+      config = outputer.config
+      s3 = outputer.s3
+      bucket = s3.buckets[config['bucket']]
+      raw = bucket.objects["#{config['folder']}/prod-api-app.json"].read
+
+      json = JSON.load(raw)
+      json['run_list'].should == ["role[base]","role[api_app]"]
+      json['deploy_code'].should == true
+      json['framework_env'].should == 'production'
+      json['scout'].should be_a(Hash)
+      # clean up
+      tree = bucket.as_tree(:prefix => config['folder'])
+      tree.children.select(&:leaf?).each do |leaf|
+        leaf.object.delete
+      end 
+    end if ENV['S3'] == '1'
+
+    it "task init should set up project" do
+      File.exist?("#{@project}/config/s3.example.yml").should be_true
+      File.exist?("#{@project}/config/rna.rb").should be_true
+    end
+
+    it "task build should generate node.json files" do
+      Rna::Task.generate(
+        :quiet => true,
+        :project_root => @project
+      )
+      json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
+      json['run_list'].should == ["role[base]","role[api_app]"]
+      json['deploy_code'].should == true
+      json['framework_env'].should == 'production'
+      json['scout'].should be_a(Hash)
+    end
   end
 
-  it "base.json should not contain settings attributes" do
-    @dsl.run
-    base = JSON.load(IO.read("#{@project_root}/output/base.json"))
-    base['framework_env'].should be_nil
-    base['deploy_code'].should be_nil
-  end
-
-  it "prod-api-redis.json should contain base and settings attributes" do
-    @dsl.run
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-redis.json"))
-    json['role'].should == 'prod-api-redis'
-    json['run_list'].should == ["role[base]", "role[api_redis]"]
-    json['framework_env'].should == 'production'
-    json['deploy_code'].should == nil
-  end
-
-  it "stag-api-redis.json should contain base and settings attributes and apply rules" do
-    @dsl.run
-    json = JSON.load(IO.read("#{@project_root}/output/stag-api-redis.json"))
-    json['role'].should == 'stag-api-redis'
-    json['run_list'].should == ["role[base]", "role[api_redis]"]
-    json['deploy_code'].should == nil
-    json['framework_env'].should == 'staging' # this is tests the rule
-  end
-
-  it "prod-api-app.json should contain base and settings attributes" do
-    @dsl.run
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
-    json['role'].should == 'prod-api-app'
-    json['run_list'].should == ["role[base]","role[api_app]"]
-    json['deploy_code'].should == true
-    json['framework_env'].should == 'production'
-    json['scout'].should be_a(Hash)
-  end
-
-  it "prod-api-app.json should contain attributes from node" do
-    @dsl.run
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
-    json['database']['user'].should == 'user'
-    json['database']['pass'].should == 'pass'
-    json['database']['host'].should == '127.0.0.1'
-  end
-
-  it "prod-api-app.json should contain pre and post rules" do
-    @dsl.run
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
-    json['role'].should == 'prod-api-app'
-    json['run_list'].should == ["role[base]","role[api_app]"]
-    json['deploy_code'].should == true
-    json['framework_env'].should == 'production'
-    json['scout'].should be_a(Hash)
-    json['pre_rule'].should == 1
-    json['post_rule'].should == 2
-  end
-
-  it "masta-app should not generate output file" do
-    @dsl.run
-    File.exist?("#{@project_root}/output/masta-app.json").should be_false
-    File.exist?("#{@project_root}/output/prod-masta-android.json").should be_true
-    json = JSON.load(IO.read("#{@project_root}/output/prod-masta-android.json"))
-    json['masta_app'].should == 123
-  end
-
-  it "should be able to read shared settings" do
-    @dsl.run
-    File.exist?("#{@project_root}/output/masta-app.json").should be_false
-    File.exist?("#{@project_root}/output/prod-masta-android.json").should be_true
-    json = JSON.load(IO.read("#{@project_root}/output/prod-masta-android.json"))
-    json['relayhost'].should == "smtp.sendgrid.net"
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
-    json['relayhost'].should == "smtp.sendgrid.net"
-  end
-  ###################
-
-  # only run when S3=1, will need to setup spec/project/config/s3.yml
-  it "should upload to s3" do
-    @dsl = Rna::DSL.new(
-      :output => 's3', 
-      :s3_config_path => "#{@project_root}/config/s3.yml",
-      :config_path => "#{@project_root}/config/rna.rb"
-    )
-    outputer = @dsl.run
-
-    config = outputer.config
-    s3 = outputer.s3
-    bucket = s3.buckets[config['bucket']]
-    raw = bucket.objects["#{config['folder']}/prod-api-app.json"].read
-
-    json = JSON.load(raw)
-    json['role'].should == 'prod-api-app'
-    json['run_list'].should == ["role[base]","role[api_app]"]
-    json['deploy_code'].should == true
-    json['framework_env'].should == 'production'
-    json['scout'].should be_a(Hash)
-    # clean up
-    tree = bucket.as_tree(:prefix => config['folder'])
-    tree.children.select(&:leaf?).each do |leaf|
-      leaf.object.delete
-    end 
-  end if ENV['S3'] == '1'
-
-  it "task init should set up project" do
-    File.exist?("#{@project2_root}/config/s3.yml").should be_false
-    File.exist?("#{@project2_root}/config/rna.rb").should be_false
-    Rna::Task.init(@project2_root, :quiet => true)
-    File.exist?("#{@project2_root}/config/s3.yml").should be_true
-    File.exist?("#{@project2_root}/config/rna.rb").should be_true
-    FileUtils.rm_rf("#{@project2_root}/config")
-  end
-
-  it "task build should generate node.json files" do
-    Rna::Task.generate(
-      :config_path => "#{@project_root}/config/rna.rb", 
-      :output_path => "#{@project_root}/output"
-    )
-    json = JSON.load(IO.read("#{@project_root}/output/prod-api-app.json"))
-    json['role'].should == 'prod-api-app'
-    json['run_list'].should == ["role[base]","role[api_app]"]
-    json['deploy_code'].should == true
-    json['framework_env'].should == 'production'
-    json['scout'].should be_a(Hash)
-  end
 end
 
 describe Node do

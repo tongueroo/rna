@@ -5,7 +5,6 @@ role 'prod-api-resque', 'stag-api-resque' do
   node[:workers] = 8
 end
 role 'prod-api-app', 'stag-api-app' do
-  role_list ['base','api_app']
   node[:application] = 'api'
   node[:deploy_code] = true
   node[:repository] = 'git@github.com:owner/repo.git/api.git'

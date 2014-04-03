@@ -2,11 +2,13 @@ module Rna
   class DSL
     attr_reader :data, :jsons
     def initialize(options={})
-      @options = options
+      @options = options.dup
+      @project_root = options[:project_root] || '.'
+      @path = "#{@project_root}/config/rna.rb"
+      @options[:output_path] = "#{@project_root}/output"
 
-      @path = options[:config_path] || 'config/rna.rb'
-      @pre_rule = nil
-      @post_rule = nil
+      @before = nil
+      @after = nil
       @roles = []
     end
 
@@ -33,12 +35,12 @@ module Rna
       Role.default_includes = role
     end
 
-    def pre_rule(&block)
-      @pre_rule = {:block => block}
+    def before(&block)
+      @before = {:block => block}
     end
 
-    def post_rule(&block)
-      @post_rule = {:block => block}
+    def after(&block)
+      @after = {:block => block}
     end
 
     def role(*names, &block)
@@ -50,6 +52,7 @@ module Rna
     end
 
     def run
+      puts "Generating rna files" unless @options[:quiet]
       evaluate
       build
       process
@@ -85,18 +88,18 @@ module Rna
         json = process_role(includes, depth+1)
       else
         json = {}
-        if @pre_rule
-          pre_data = Rule.new(role, @pre_rule[:block]).build
-          json.merge!(pre_data[:attributes])
+        if @before
+          pre_data = Rule.new(role, @before[:block]).build
+          json.deep_merge!(pre_data[:attributes])
         end
       end
 
       attributes = role_data[:attributes] || {}
-      json.merge!(attributes)
+      json.deep_merge!(attributes)
       # only process post rule at the very last step
-      if @post_rule and depth == 1
-        post_data = Rule.new(role, @post_rule[:block]).build
-        json.merge!(post_data[:attributes])
+      if @after and depth == 1
+        post_data = Rule.new(role, @after[:block]).build
+        json.deep_merge!(post_data[:attributes])
       end
       json
     end
@@ -122,7 +125,7 @@ module Rna
           @dsl = eval "self", @block.binding
           instance_eval(&@block)
         end        
-        @data[:attributes].merge!(set.to_mash)
+        @data[:attributes].deep_merge!(set.to_mash)
         @data
       end
 
@@ -171,9 +174,7 @@ module Rna
 
         @data = {
           :name => name,
-          :attributes => {
-            :role => name
-          },
+          :attributes => {},
           :includes => @@default_includes != name ? @@default_includes : nil,
           :output => true
         }
