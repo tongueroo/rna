@@ -19,3 +19,4 @@ tmp
 output
 spec/project
 config/aws.yml
+config/s3.yml
