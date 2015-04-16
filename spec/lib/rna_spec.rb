@@ -8,7 +8,7 @@ describe Rna do
   end
 
   after(:each) do
-    FileUtils.rm_rf("#{@project}/output")
+    # FileUtils.rm_rf("#{@project}/output")
   end
 
   describe "cli specs" do
@@ -110,16 +110,16 @@ describe Rna do
 
     it "masta-app should not generate output file" do
       @dsl.run
-      File.exist?("#{@project}/output/masta-app.json").should be_false
-      File.exist?("#{@project}/output/prod-masta-android.json").should be_true
+      File.exist?("#{@project}/output/masta-app.json").should == false
+      File.exist?("#{@project}/output/prod-masta-android.json").should == true
       json = JSON.load(IO.read("#{@project}/output/prod-masta-android.json"))
       json['masta_app'].should == 123
     end
 
     it "should be able to read shared settings" do
       @dsl.run
-      File.exist?("#{@project}/output/masta-app.json").should be_false
-      File.exist?("#{@project}/output/prod-masta-android.json").should be_true
+      File.exist?("#{@project}/output/masta-app.json").should == false
+      File.exist?("#{@project}/output/prod-masta-android.json").should == true
       json = JSON.load(IO.read("#{@project}/output/prod-masta-android.json"))
       json['relayhost'].should == "smtp.sendgrid.net"
       json = JSON.load(IO.read("#{@project}/output/prod-api-app.json"))
@@ -154,8 +154,8 @@ describe Rna do
     end if ENV['S3'] == '1'
 
     it "task init should set up project" do
-      File.exist?("#{@project}/config/s3.example.yml").should be_true
-      File.exist?("#{@project}/config/rna.rb").should be_true
+      File.exist?("#{@project}/config/s3.example.yml").should == true
+      File.exist?("#{@project}/config/rna.rb").should == true
     end
 
     it "task build should generate node.json files" do
