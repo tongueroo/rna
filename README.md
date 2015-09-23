@@ -1,5 +1,6 @@
 # Rna gem
 
+[![ReadmeCI](http://www.readmeci.com/images/readmeci-badge.svg)](http://www.readmeci.com/tongueroo/rna)
 [![Build History][2]][1]
 
 [1]: http://travis-ci.org/tongueroo/rna
